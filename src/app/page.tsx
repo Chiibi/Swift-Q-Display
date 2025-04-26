@@ -84,9 +84,12 @@ export default function PublicDisplay() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 sm:p-12 md:p-16 bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold mb-6 sm:mb-8 md:mb-10 text-center"> {/* Reduced bottom margin */}
-        Hackathon Support Queue
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold mb-6 sm:mb-8 md:mb-6 text-center"> {/* Reduced bottom margin */}
+        Young iOS Developer Hackathon
       </h1>
+      <h2 className="text-4xl text-neutral-500 mb-6 sm:mb-8 md:mb-10 text-center"> {/* Reduced bottom margin */}
+        Clinic Queue
+      </h2>
 
       {/* --- Marquee Display --- */}
       {marqueeText && (
@@ -111,7 +114,7 @@ export default function PublicDisplay() {
               } p-5 sm:p-6 flex flex-col transition-all duration-300 ease-in-out`}
             >
               {/* Adjusted heading styles */}
-              <h2 className={`text-2xl sm:text-3xl font-medium mb-4 text-center border-b pb-3 ${terminal.isOpen ? "border-neutral-200 dark:border-neutral-700 text-[var(--foreground)]" : "border-neutral-400 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400"}`}>
+              <h2 className={`text-2xl sm:text-3xl font-semibold mb-4 text-center border-b pb-3 ${terminal.isOpen ? "border-neutral-200 dark:border-neutral-700 text-[var(--foreground)]" : "border-neutral-400 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400"}`}>
                 {terminal.name}
                 <span className={`block text-lg font-normal mt-1 ${terminal.isOpen ? 'text-neutral-600 dark:text-neutral-300' : 'text-neutral-500 dark:text-neutral-400'}`}>
                     ({terminal.isOpen ? "Open" : "Closed"})
