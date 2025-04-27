@@ -126,7 +126,7 @@ export default function PublicDisplay() {
                 <div className={`mb-5 p-4 rounded-lg text-center shadow-md border transition-all duration-300 ease-in-out ${
                   currentTicket.status === 'called'
                     ? 'bg-green-500 dark:bg-green-600 text-white border-green-300 dark:border-green-500 animate-prominent-call'
-                    : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100 border-neutral-300 dark:border-neutral-600' // Grey background for in_progress
+                    : 'bg-amber-400 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100 border-yellow-300 dark:border-neutral-600' // background for in_progress
                 }`}>
                   <p className="text-sm uppercase tracking-wider font-medium">
                     {currentTicket.status === 'called' ? 'Now Calling' : 'Now Serving'}
