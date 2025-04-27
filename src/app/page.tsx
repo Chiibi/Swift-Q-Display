@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -17,6 +17,8 @@ export default function PublicDisplay() {
   const [terminals, setTerminals] = useState<Terminal[]>([]);
   // Fetch tickets that are relevant for public display (queued, called, in_progress)
   const [activeTickets, setActiveTickets] = useState<SupportTicket[]>([]);
+  const [audioEnabled, setAudioEnabled] = useState(false); // State to track audio permission
+  const audioRef = useRef<HTMLAudioElement | null>(null); // Ref to store the audio object
 
   // Fetch Terminals (ordered by name)
   useEffect(() => {
@@ -52,6 +54,63 @@ export default function PublicDisplay() {
       setActiveTickets(ticketsData);
     });
     return () => unsubscribe();
+  }, []);
+
+  // --- Audio Notification Logic ---
+  const prevActiveTicketsRef = useRef<SupportTicket[]>([]);
+
+  // Initialize Audio object once
+  useEffect(() => {
+    // Preload the audio file
+    audioRef.current = new Audio('/notification.mp3');
+    audioRef.current.load(); // Attempt to load the audio file
+  }, []);
+
+  // Effect to play sound when tickets become 'called' *if* audio is enabled
+  useEffect(() => {
+    if (!audioEnabled || !audioRef.current) {
+      // Don't play sound if user hasn't enabled it or audio isn't ready
+      prevActiveTicketsRef.current = activeTickets; // Still update previous tickets
+      return;
+    }
+
+    const newlyCalledTickets = activeTickets.filter(currentTicket => {
+      const prevTicket = prevActiveTicketsRef.current.find(t => t.id === currentTicket.id);
+      return currentTicket.status === 'called' && (!prevTicket || prevTicket.status !== 'called');
+    });
+
+    if (newlyCalledTickets.length > 0) {
+      console.log(`Audio Enabled: Playing notification for ${newlyCalledTickets.length} newly called ticket(s).`);
+      audioRef.current.play().catch(error => {
+        console.error("Audio playback failed even after enabling:", error);
+        // If it still fails, there might be other issues or stricter browser policies.
+        // Resetting audioEnabled might prompt the user again, but could be annoying.
+        // setAudioEnabled(false);
+      });
+    }
+
+    prevActiveTicketsRef.current = activeTickets;
+  }, [activeTickets, audioEnabled]); // Depend on audioEnabled state
+
+  // Function to handle enabling audio via user interaction
+  const handleEnableAudio = useCallback(() => {
+    setAudioEnabled(true);
+    // Attempt to play the audio muted immediately after user interaction
+    // This often satisfies the browser's requirement.
+    if (audioRef.current) {
+        audioRef.current.muted = true; // Mute it first
+        audioRef.current.play().then(() => {
+            // Success! Pause and unmute for actual plays later.
+            audioRef.current?.pause();
+            audioRef.current!.currentTime = 0; // Reset playback position
+            audioRef.current!.muted = false;
+            console.log("Audio context unlocked by user interaction.");
+        }).catch(error => {
+            console.error("Initial muted playback failed:", error);
+            // Might need a more direct user interaction or different approach
+            // depending on the browser's specific policy.
+        });
+    }
   }, []);
 
   // Group and sort tickets by terminal based on queueOrder
@@ -90,6 +149,18 @@ export default function PublicDisplay() {
       <h2 className="text-4xl text-neutral-500 mb-6 sm:mb-8 md:mb-10 text-center"> {/* Reduced bottom margin */}
         Clinic Queue
       </h2>
+
+      {/* --- Enable Audio Button --- */}
+      {!audioEnabled && (
+        <div className="w-full flex justify-center mb-6">
+          <button
+            onClick={handleEnableAudio}
+            className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+          >
+            Enable Sound Notifications
+          </button>
+        </div>
+      )}
 
       {/* --- Marquee Display --- */}
       {marqueeText && (
